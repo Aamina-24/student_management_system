@@ -1,0 +1,16 @@
+{% extends 'student/student_base.html' %}
+
+{% block title %}
+    Apply for Leave
+{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <h2>Apply for Leave</h2>
+        <form action="{% url 'apply' %}" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>
+    </div>
+{% endblock %}

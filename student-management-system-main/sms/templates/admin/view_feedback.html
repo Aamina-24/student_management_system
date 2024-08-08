@@ -1,0 +1,106 @@
+{% extends 'admin/base.html' %}  <!-- Assuming admin/base.html is your admin base template -->
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Feedback Table -->
+                <div class="card card-dark">
+                    <div class="card-header">
+                        <h3 class="card-title">Feedback Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover">
+                            <tr>
+                                <th>#</th>
+                                <th>Student</th>
+                                <th>Message</th>
+                                <th>Sent On</th>
+                                <th>Replied On</th>
+                                <th>Action</th>
+                            </tr>
+                            {% for feedback in feedbacks %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ feedback.student }}</td>
+                                <td>{{ feedback.feedback }}</td>
+                                <td>{{ feedback.created_at }}</td>
+                                <td>
+                                    {% if feedback.reply %}
+                                        {{ feedback.updated_at }}
+                                    {% else %}
+                                        <span class='badge badge-warning'>Pending Response</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not feedback.reply %}
+                                        <button data-toggle="modal" data-target="#reply_modal" data-id="{{ feedback.id }}" class="btn btn-success reply_open_modal">Reply</button>
+                                    {% else %}
+                                        {{ feedback.reply }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+                <!-- Modal for Reply -->
+                <div class="modal fade" id="reply_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                <h4 class="modal-title" id="myModalLabel">Reply to Feedback</h4>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="feedback_id">
+                                <textarea id="reply_message" cols="30" rows="10" class="form-control"></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                <button id="reply_btn" class="btn btn-success">Send Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block custom_js %}
+<script>
+    $(document).ready(function() {
+        $('.reply_open_modal').on('click', function() {
+            var feedbackId = $(this).data('id');
+            $('#feedback_id').val(feedbackId);
+        });
+
+        $('#reply_btn').on('click', function() {
+            var feedbackId = $('#feedback_id').val();
+            var replyMessage = $('#reply_message').val();
+
+            $.ajax({
+                url: "{% url 'handle_feedback_reply' %}",
+                type: 'POST',
+                data: {
+                    id: feedbackId,
+                    reply: replyMessage
+                },
+                success: function(response) {
+                    if (response === "True") {
+                        alert("Reply sent successfully.");
+                        location.reload();
+                    } else {
+                        alert("Failed to send reply.");
+                    }
+                },
+                error: function() {
+                    alert("An error occurred.");
+                }
+            });
+        });
+    });
+</script>
+{% endblock custom_js %}
+{% endblock content %}
